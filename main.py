@@ -28,7 +28,7 @@ class Main:
 							filled_values.append(row[column])
 
 				df[column] = filled_values
-				print(df[column].head(50))
+				print(df[column].head(5))
 				return df  # Re
 
 		def preprocess_data(self, df):
@@ -47,6 +47,19 @@ class Main:
 				# Selecting relevant features
 				features = df[['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked']]
 				return features
+  
+		def training_model(self, X, y, model):
+				# X_train er alle de uafhængige variable, og y_train er den afhængige variabel'Survived', som vi vil forudsige
+				# train_test_split træner på 80% af dataen og efterlader 20 % af dataen til at teste på efter, så test data er data der ikke er blevet trænet på. random_state på 42 sikrer at den deler dataen op i de forskellige grupper på samme måde hver gang, for at opnå reliabilitet på tværs af tests
+				X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    		#trains data on model data
+				model.fit(X_train, y_train)
+
+				# Predicting and evaluating
+				predictions = model.predict(X_test)
+				print(f'Accuracy: {accuracy_score(y_test, predictions)}')
+				return predictions
 
 		def train_and_evaluate(self):
 				df = pd.read_csv('train.csv')
@@ -54,29 +67,20 @@ class Main:
 				#se de første 3 rækker i træningsdataen
 				print(df.head(3))
 				
-				#Pivot
 
 				#Lave et pivot table for at se overlevelsesraten for mænd og kvinder i hver klasse
 				pivot_table = df.pivot_table(values='Survived', index='Sex', columns='Pclass', aggfunc='mean')
-				print(pivot_table)
+				# print(pivot_table)
 				
-				#ML
+				# Model training object using decision tree
+				model = RandomForestClassifier()#
+    
+				#Udfyld manglende værdier
 				X= self.preprocess_data(df)
 				y = df['Survived']
 
-				# X_train er alle de uafhængige variable, og y_train er den afhængige variabel'Survived', som vi vil forudsige
-				# train_test_split træner på 80% af dataen og efterlader 20 % af dataen til at teste på efter, så test data er data der ikke er blevet trænet på. random_state på 42 sikrer at den deler dataen op i de forskellige grupper på samme måde hver gang, for at opnå reliabilitet på tværs af tests
-				X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+				predictions = self.training_model(X, y, model)
 
-				# Model training object using decision tree
-				model = RandomForestClassifier()#
-    		#trains data on model data
-				model.fit(X_train, y_train)
-
-				# Predicting and evaluating
-				predictions = model.predict(X_test)
-				accuracy = accuracy_score(y_test, predictions)
-				print(f'Accuracy: {accuracy}')
 	
 				#Load test data
 				test_df = pd.read_csv('test.csv')
